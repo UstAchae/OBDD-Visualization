@@ -1,0 +1,5 @@
+[warn] -- [E030] Match case Unreachable Warning: C:\G400\Individual project\OBDD-Visualization\backend\src\main\scala\ApiRoutes.scala:72:9 
+[warn] 72 |    case req@POST -> Root / "bdd" =>
+[warn]    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+[warn]    |         Unreachable case
+[warn] one warning found

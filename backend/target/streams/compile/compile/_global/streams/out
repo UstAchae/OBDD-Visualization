@@ -1,0 +1,90 @@
+[error] -- Error: C:\G400\Individual project\OBDD-Visualization\backend\src\main\scala\Main.scala:12:0 
+[error] 12 |final case class NodeData(id: String, label: String)
+[error]    |^^^^^
+[error]    |indented definitions expected, final found
+[error] -- [E006] Not Found Error: C:\G400\Individual project\OBDD-Visualization\backend\src\main\scala\Main.scala:17:38 
+[error] 17 |                       addNodes: List[NodeData] = Nil,
+[error]    |                                      ^^^^^^^^
+[error]    |                                      Not found: type NodeData
+[error]    |
+[error]    | longer explanation available when compiling with `-explain`
+[error] -- [E006] Not Found Error: C:\G400\Individual project\OBDD-Visualization\backend\src\main\scala\Main.scala:29:22 
+[error] 29 |      addNodes = List(NodeData("x", "x")),
+[error]    |                      ^^^^^^^^
+[error]    |                      Not found: NodeData
+[error]    |
+[error]    | longer explanation available when compiling with `-explain`
+[error] -- [E006] Not Found Error: C:\G400\Individual project\OBDD-Visualization\backend\src\main\scala\Main.scala:34:22 
+[error] 34 |      addNodes = List(NodeData("t0", "0"), NodeData("t1", "1")),
+[error]    |                      ^^^^^^^^
+[error]    |                      Not found: NodeData
+[error]    |
+[error]    | longer explanation available when compiling with `-explain`
+[error] -- [E006] Not Found Error: C:\G400\Individual project\OBDD-Visualization\backend\src\main\scala\Main.scala:34:43 
+[error] 34 |      addNodes = List(NodeData("t0", "0"), NodeData("t1", "1")),
+[error]    |                                           ^^^^^^^^
+[error]    |                                           Not found: NodeData
+[error]    |
+[error]    | longer explanation available when compiling with `-explain`
+[error] -- [E008] Not Found Error: C:\G400\Individual project\OBDD-Visualization\backend\src\main\scala\Main.scala:53:21 
+[error] 53 |          Header.Raw(ci"Access-Control-Allow-Origin", "*"),
+[error]    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[error]    |value ci is not a member of StringContext, but could be made available as an extension method.
+[error]    |
+[error]    |The following import might fix the problem:
+[error]    |
+[error]    |  import org.typelevel.ci.CIStringSyntax
+[error]    |
+[error] -- [E008] Not Found Error: C:\G400\Individual project\OBDD-Visualization\backend\src\main\scala\Main.scala:54:21 
+[error] 54 |          Header.Raw(ci"Access-Control-Allow-Methods", "GET, POST, OPTIONS"),
+[error]    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[error]    |value ci is not a member of StringContext, but could be made available as an extension method.
+[error]    |
+[error]    |The following import might fix the problem:
+[error]    |
+[error]    |  import org.typelevel.ci.CIStringSyntax
+[error]    |
+[error] -- [E008] Not Found Error: C:\G400\Individual project\OBDD-Visualization\backend\src\main\scala\Main.scala:55:21 
+[error] 55 |          Header.Raw(ci"Access-Control-Allow-Headers", "Content-Type")
+[error]    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[error]    |value ci is not a member of StringContext, but could be made available as an extension method.
+[error]    |
+[error]    |The following import might fix the problem:
+[error]    |
+[error]    |  import org.typelevel.ci.CIStringSyntax
+[error]    |
+[error] -- [E008] Not Found Error: C:\G400\Individual project\OBDD-Visualization\backend\src\main\scala\Main.scala:61:21 
+[error] 61 |          Header.Raw(ci"Access-Control-Allow-Origin", "*"),
+[error]    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[error]    |value ci is not a member of StringContext, but could be made available as an extension method.
+[error]    |
+[error]    |The following import might fix the problem:
+[error]    |
+[error]    |  import org.typelevel.ci.CIStringSyntax
+[error]    |
+[error] -- [E008] Not Found Error: C:\G400\Individual project\OBDD-Visualization\backend\src\main\scala\Main.scala:62:21 
+[error] 62 |          Header.Raw(ci"Access-Control-Allow-Methods", "GET, POST, OPTIONS"),
+[error]    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[error]    |value ci is not a member of StringContext, but could be made available as an extension method.
+[error]    |
+[error]    |The following import might fix the problem:
+[error]    |
+[error]    |  import org.typelevel.ci.CIStringSyntax
+[error]    |
+[error] -- [E008] Not Found Error: C:\G400\Individual project\OBDD-Visualization\backend\src\main\scala\Main.scala:63:21 
+[error] 63 |          Header.Raw(ci"Access-Control-Allow-Headers", "Content-Type")
+[error]    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[error]    |value ci is not a member of StringContext, but could be made available as an extension method.
+[error]    |
+[error]    |The following import might fix the problem:
+[error]    |
+[error]    |  import org.typelevel.ci.CIStringSyntax
+[error]    |
+[error] -- [E007] Type Mismatch Error: C:\G400\Individual project\OBDD-Visualization\backend\src\main\scala\Main.scala:70:14 
+[error] 70 |    .withHost("0.0.0.0")
+[error]    |              ^^^^^^^^^
+[error]    |              Found:    ("0.0.0.0" : String)
+[error]    |              Required: com.comcast.ip4s.Host
+[error]    |
+[error]    | longer explanation available when compiling with `-explain`
+[error] 12 errors found

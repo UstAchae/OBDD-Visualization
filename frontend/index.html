@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BDD Visualizer UI (Desmos-like)</title>
+
+    <!-- Cytoscape (CDN) -->
+    <script src="https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
+
+    <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+<div class="app">
+    <div class="main">
+        <section class="left">
+            <div class="left-header">
+                <div class="title">Expressions</div>
+                <div class="left-actions">
+                    <button class="btn" id="btnAdd">+ Add</button>
+                    <button class="btn danger" id="btnClearAll">Clear</button>
+                </div>
+            </div>
+
+            <div class="expr-list" id="exprList"></div>
+
+
+        </section>
+
+        <section class="right">
+            <div class="right-header">
+                <div class="title">BDD View</div>
+                <div class="status">
+                    <span class="pill" id="selectedInfo">No selection</span>
+                    <span class="pill" id="backendInfo">Backend: /api/bdd</span>
+                </div>
+            </div>
+            <div id="cy"></div>
+        </section>
+    </div>
+
+    <section class="keyboard">
+        <div class="kbd-area">
+            <div class="kbd-row" id="rowAP">
+                <div class="key" data-insert="p">p</div>
+                <div class="key" data-insert="q">q</div>
+                <div class="key" data-insert="r">r</div>
+                <div class="key" data-insert="s">s</div>
+                <div class="key fn" data-action="addAP">+AP</div>
+            </div>
+
+            <div class="kbd-row">
+                <div class="key op" data-insert="¬">¬</div>
+                <div class="key op" data-insert="∧">∧</div>
+                <div class="key op" data-insert="∨">∨</div>
+                <div class="key op" data-insert="⊕">⊕</div>
+                <div class="key op" data-insert="→">→</div>
+                <div class="key op" data-insert="↔">↔</div>
+            </div>
+
+            <div class="kbd-row">
+                <div class="key" data-insert="(">(</div>
+                <div class="key" data-insert=")">)</div>
+                <div class="key" data-insert="1">1</div>
+                <div class="key" data-insert="0">0</div>
+                <div class="key fn" data-action="space">Space</div>
+                <div class="key fn" data-action="backspace">⌫</div>
+            </div>
+
+            <div class="kbd-row">
+                <div class="key fn" data-action="newLine">New line</div>
+                <div class="key danger" data-action="clearLine">Clear line</div>
+            </div>
+
+        </div>
+
+        <div class="controls">
+            <div class="ctrl-box">
+                <h4>Apply (预留)</h4>
+                <div class="ctrl-row">
+                    <button class="btn" id="btnApplyAnd">AND</button>
+                    <button class="btn" id="btnApplyOr">OR</button>
+                    <button class="btn" id="btnApplyXor">XOR</button>
+                </div>
+                <p class="small" style="margin:8px 0 0 0;">
+                    选中两行表达式后，用 apply 生成新表达式（你后端做 apply 最靠谱）。
+                </p>
+            </div>
+
+            <div class="ctrl-box">
+                <h4>View</h4>
+                <div class="ctrl-row">
+                    <button class="btn" id="btnFit">Fit</button>
+                    <button class="btn" id="btnResetExample">Example</button>
+                </div>
+                <p class="small" style="margin:8px 0 0 0;">
+                    右侧用 Cytoscape 画 BDD。后端返回 <code>elements</code> 就行。
+                </p>
+            </div>
+
+            <div class="ctrl-box">
+                <h4>Backend contract</h4>
+                <p class="small" style="margin:0;">
+                    POST <code>/api/bdd</code><br/>
+                    body: <code>{ expr: "p ∧ q", vars: ["p","q"] }</code><br/>
+                    resp: <code>{ elements: { nodes:[...], edges:[...] } }</code>
+                </p>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script src="./app.js" defer></script>
+</body>
+</html>
