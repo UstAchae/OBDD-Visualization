@@ -1,0 +1,13 @@
+# Scala / sbt
+target/
+project/target/
+project/project/
+
+# Logs
+*.log
+**/global-logging/
+
+# IDE
+.idea/
+.vscode/
+*.iml
