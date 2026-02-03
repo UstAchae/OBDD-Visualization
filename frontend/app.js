@@ -321,6 +321,33 @@ function syncOrder(exprText, currentOrder) {
   return kept.concat(appended);
 }
 
+function shouldRequest(expr) {
+  const s = (expr || "").trim();
+  if (!s) return false;
+
+  // 1) Parentheses balance
+  let bal = 0;
+  for (const ch of s) {
+    if (ch === "(") bal++;
+    else if (ch === ")") bal--;
+    if (bal < 0) return false; // ")(" like cases are invalid
+  }
+  if (bal !== 0) return false; // still unclosed "("
+
+  // 2) Must not end with a binary operator
+  // Adjust to your operators set
+  const endsWithBinaryOp = /[∧∨⊕→↔]$/.test(s);
+  if (endsWithBinaryOp) return false;
+
+  // 3) Must not end with negation only
+  if (/¬$/.test(s)) return false;
+
+  // 4) Must not contain two binary ops in a row (very common while typing)
+  if (/[∧∨⊕→↔]{2,}/.test(s)) return false;
+
+  return true;
+}
+
 
 // -----------------------------
 // Expressions UI (inline inputs)
@@ -450,7 +477,12 @@ function setActiveIndex(idx) {
 function onLineChanged(idx, inputEl, { runNetwork = true } = {}) {
   const e = state.expressions[idx];
   e.text = inputEl.value;
-  e.order = syncOrder(e.text, e.order);
+
+  if (!e.text.trim()) {
+    e.order = [];
+  } else {
+    e.order = syncOrder(e.text, e.order);
+  }
 
   state.activeIndex = idx;
   updateActiveClass();
@@ -514,7 +546,7 @@ function renderExprList() {
     del.title = "Delete";
     del.addEventListener("click", (ev) => {
       ev.stopPropagation();
-      deleteLine(idx);
+      clearLineAt(idx);
     });
 
     item.addEventListener("click", () => setActiveIndex(idx));
@@ -530,6 +562,14 @@ function renderExprList() {
   });
 
   updateSelectedInfo();
+}
+
+function clearLineAt(idx) {
+  const item = exprListEl.querySelector(`.expr-item[data-index="${idx}"]`);
+  const input = item?.querySelector(".expr-input");
+  if (!input) return;
+  input.value = "";
+  onLineChanged(idx, input);
 }
 
 function focusActiveInputSoon() {
@@ -618,10 +658,8 @@ function prepareActiveExpr() {
 
   try {
     const defs = buildDefMap();
-    let expanded = raw;
-
     const d = parseDefinition(raw);
-    expanded = d ? d.rhs : raw;
+    let expanded = d ? d.rhs : raw;
     expanded = expandExpr(expanded, defs);
 
     const vars = syncOrder(expanded, active.order);
@@ -634,11 +672,14 @@ function prepareActiveExpr() {
   }
 }
 
+
 async function updateTruthTableForActive(isLive = true) {
   const prep = prepareActiveExpr();
   if (!prep.ok) return;
 
   const { expanded, vars } = prep;
+
+  if (isLive && !shouldRequest(expanded)) return;
 
   try {
     const ttResp = await fetch("/api/truth-table", {
@@ -648,20 +689,13 @@ async function updateTruthTableForActive(isLive = true) {
     });
 
     if (!ttResp.ok) {
+      if (isLive && ttResp.status === 400) return;
       const txt = await ttResp.text();
       throw new Error(`HTTP ${ttResp.status}: ${txt}`);
     }
 
     const data = await ttResp.json();
-
-    const rows = data.rows.map(r => {
-      const obj = {};
-      data.vars.forEach((v, i) => (obj[v] = r.env[i]));
-      obj.out = r.out;
-      return obj;
-    });
-
-    console.table(rows);
+    // render table...
   } catch (err) {
     if (!isLive) console.warn(`Truth table request failed: ${err.message}`);
   }
@@ -671,14 +705,18 @@ async function updateBddForActive(isLive = true) {
   const prep = prepareActiveExpr();
 
   if (!prep.ok) {
-    clearGraph();
-    if (!isLive && prep.reason === "expand_failed") {
-      console.warn(`Expand failed: ${prep.error?.message ?? prep.error}`);
+    // If the line is truly empty, always clear the graph.
+    if (prep.reason === "empty") {
+      clearGraph();
     }
+    // If it's just temporarily invalid while typing, keep the old graph.
     return;
   }
 
   const { expanded, vars } = prep;
+
+  // Optional: don't even request while typing incomplete expressions
+  if (isLive && !shouldRequest(expanded)) return;
 
   const mySeq = ++bddReqSeq;
 
@@ -689,34 +727,29 @@ async function updateBddForActive(isLive = true) {
       body: JSON.stringify({ expr: expanded, vars })
     });
 
-    // ignore stale
     if (mySeq !== bddReqSeq) return;
 
     if (!resp.ok) {
+      // Live typing can yield invalid expressions; ignore 400 quietly.
+      if (isLive && resp.status === 400) return;
+
       clearGraph();
-      if (!isLive) {
-        const txt = await resp.text();
-        console.warn(`BDD request failed: HTTP ${resp.status}: ${txt}`);
-      }
       return;
     }
 
     const data = await resp.json();
-
-    // ignore stale again after await
     if (mySeq !== bddReqSeq) return;
 
     if (data?.elements?.nodes && data?.elements?.edges) {
       setGraphAnimated(data.elements, ANIM);
     } else {
       clearGraph();
-      if (!isLive) console.warn("BDD response missing elements.");
     }
-  } catch (err) {
+  } catch {
     if (mySeq === bddReqSeq) clearGraph();
-    if (!isLive) console.warn(`BDD request failed: ${err.message}`);
   }
 }
+
 
 // -----------------------------
 // Keyboard
@@ -794,7 +827,6 @@ document.querySelector(".keyboard").addEventListener("click", (e) => {
 
   if (action === "backspace") backspaceFocused();
   else if (action === "space") insertToFocused(" ");
-  else if (action === "clearLine") clearLineFocused();
   else if (action === "newLine") { addLine(""); focusActiveInputSoon(); }
   else if (action === "addAP") addAP();
 });
