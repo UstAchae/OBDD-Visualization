@@ -15,3 +15,4 @@ lazy val root = (project in file("."))
   )
 Compile / run / fork := true
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.5.16"
+ThisBuild / scalacOptions += "-Xmax-inlines:128"

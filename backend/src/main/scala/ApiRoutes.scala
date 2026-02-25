@@ -20,6 +20,12 @@ object ApiRoutes {
   private implicit val bddRespEncoder: EntityEncoder[IO, BddResp] =
     jsonEncoderOf[IO, BddResp]
 
+  private implicit val reduceReqDecoder: EntityDecoder[IO, ReduceTraceReq] =
+    jsonOf[IO, ReduceTraceReq]
+
+  private implicit val reduceRespEncoder: EntityEncoder[IO, ReduceTraceResp] = 
+    jsonEncoderOf[IO, ReduceTraceResp]
+
   val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
 
     case GET -> Root =>
@@ -76,9 +82,56 @@ object ApiRoutes {
 
         r <- Ok(BddResp(elements).asJson)
       } yield r).handleErrorWith {
+        case e: IllegalArgumentException =>
+          BadRequest(e.getMessage)
+
+        case other =>
+          BadRequest(
+            s"${other.getClass.getName}: ${Option(other.getMessage).getOrElse("")}"
+          )
+      }
+
+    case req@POST -> Root / "bdd" / "reduce-trace" =>
+      (for {
+        body <- req.as[ReduceTraceReq]
+
+        expr <- IO.fromEither(
+          TempParser.parse(body.expr).left.map(e => new IllegalArgumentException(e.toString))
+        )
+
+        tt <- IO(BoolExpr.truthTable(expr, body.vars))
+          .handleErrorWith {
+            case e: IllegalArgumentException => IO.raiseError(e)
+            case other => IO.raiseError(other)
+          }
+
+        rows = tt.map { case (envMap, out) =>
+          BDDFromTruthTable.Row(
+            body.vars.map(v => envMap(v)).toVector,
+            out
+          )
+        }.toVector
+
+        root = BDDFromTruthTable.build(body.vars.toVector, rows)
+
+        stepsBuf = scala.collection.mutable.ListBuffer.empty[ReduceStepResp]
+
+        _ = BDDCore.reduceWithTrace(
+          root = root,
+          n = body.vars.length,
+          onStep = step => {
+            val elements = BDDExport.toCytoscape(root, body.vars.toVector)
+            val focusIds = step.focus.map(BDDExport.cyIdOf)
+            stepsBuf += ReduceStepResp(step.title, elements, focusIds)
+          }
+        )
+
+        r <- Ok(ReduceTraceResp(stepsBuf.toList).asJson)
+      } yield r).handleErrorWith {
         case e: IllegalArgumentException => BadRequest(e.getMessage)
         case other => BadRequest(other.getMessage)
       }
+
 
   }
 }

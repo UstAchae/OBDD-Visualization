@@ -20,25 +20,23 @@ body{
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
   background: var(--bg);
   color: var(--text);
-  overflow:hidden; /* 类似 Desmos：整体不滚动，内部滚动 */
+  overflow:hidden;
 }
 
-/* 整体布局：上方主区域 + 下方键盘 */
 .app{
   height:100%;
-  display:grid;
-  grid-template-rows: 1fr 240px; /* 底部键盘高度 */
+  position: relative;
 }
 
 .main{
+  height:100%;
   display:grid;
-  grid-template-columns: 360px 1fr; /* 左侧面板宽度 */
+  grid-template-columns: 360px 1fr;
   gap: 12px;
   padding: 12px;
-  min-height:0; /* 让内部滚动生效 */
+  min-height:0;
 }
 
-/* 左侧表达式面板 */
 .left{
   background: var(--panel);
   border: 1px solid var(--line);
@@ -231,20 +229,37 @@ body{
   color: var(--muted);
 }
 
-#cy{
-  flex:1;
-  min-height:0;
+.kbd-header{
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
 }
 
-/* 底部键盘 */
-.keyboard{
-  border-top: 1px solid var(--line);
-  background: var(--panel);
-  padding: 10px 12px;
-  display:grid;
-  grid-template-columns: 1fr 220px; /* 左侧键盘区 + 右侧控制区 */
-  gap: 12px;
-  min-height:0;
+.kbd-toggle{
+  width: 38px;
+  height: 28px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.kbd-grip{
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: #e9edf5;
+}
+
+.kbd-body{
+  max-height: 220px;
+  overflow: auto;
 }
 
 .kbd-area{
@@ -401,4 +416,151 @@ body{
   gap:6px;
   padding-left: 2px;
 }
+
+.cy-wrap{
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.layer-axis{
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 80px;
+  pointer-events: none;
+  z-index: 5;
+  background: #fff;
+  border-right: 1px solid var(--line);
+}
+
+.layer-tick{
+  position: absolute;          /* 关键：没有这个就会像你截图那样竖排 */
+  left: 8px;
+  transform: translateY(-50%); /* 让 tick 中心对齐层中心 */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+#cy{
+  position: absolute;
+  left: 80px;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* Left layout: list + keyboard panel */
+.left{
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+
+.expr-list{
+  flex: 1 1 auto;
+  min-height:0;
+  overflow:auto;
+}
+
+/* Keyboard becomes a left-only panel (not fixed) */
+.keyboard.kbd-panel{
+  position: static;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  z-index: auto;
+
+  height: auto;
+  margin: 10px 6px 6px 6px;
+
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* Body no longer has controls column */
+.keyboard.kbd-panel .kbd-body{
+  height: auto;
+  display: block;
+  padding: 10px 12px 12px 12px;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.keyboard.kbd-panel.is-collapsed{
+  transform: none;
+}
+
+.keyboard.kbd-panel.is-collapsed .kbd-body{
+  display: none;
+}
+
+/* Compact rows */
+.keyboard.kbd-panel .kbd-row{
+  display:grid;
+  gap: 8px;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+}
+
+/* Slightly smaller keys to fit the red zone */
+.keyboard.kbd-panel .key{
+  padding: 10px 8px;
+  font-size: 15px;
+  border-radius: 12px;
+}
+
+.right{
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  overflow:hidden;
+}
+
+.cy-wrap{
+  flex: 1 1 auto;
+  min-height:0;
+}
+
+.bdd-bar{
+  flex: 0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.bdd-bar-spacer{
+  flex: 1 1 auto;
+}
+
+.keyboard.kbd-panel{
+  position: static;
+  margin: 10px 6px 6px 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.keyboard.kbd-panel .kbd-body{
+  display: block;
+  padding: 10px 12px 12px 12px;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.keyboard.kbd-panel.is-collapsed .kbd-body{
+  display: none;
+}
+
+
 

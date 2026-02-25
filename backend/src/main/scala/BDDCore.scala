@@ -1,20 +1,18 @@
 object BDDCore {
-
-  // BDDNode = Terminal ∪ NonTerminal
+  /** Data Structure */
   sealed trait BDDNode {
     var mark: Boolean
     var id: Int
   }
-
+  // BDDNode = Terminal ∪ NonTerminal
   final case class Terminal(value: Boolean, var id: Int = 0, var mark: Boolean = false) extends BDDNode
-
   final case class NonTerminal(
-                                index: Int, // 1..n
-                                var low: BDDNode,
-                                var high: BDDNode,
-                                var id: Int = 0,
-                                var mark: Boolean = false
-                              ) extends BDDNode
+    index: Int, // 1..n
+    var low: BDDNode,
+    var high: BDDNode,
+    var id: Int = 0,
+    var mark: Boolean = false
+  ) extends BDDNode
 
   trait Visitor {
     def onEnter(v: BDDNode): Unit
@@ -38,21 +36,192 @@ object BDDCore {
     go(root)
   }
 
-  def reduce(root: BDDNode, n: Int): BDDNode = {
+/** Reduction */
+  /** Key used for canonicalization within a level. */
+  private sealed trait Key
+  private final case class TKey(value: Boolean) extends Key
+  private final case class NKey(lowId: Int, highId: Int) extends Key
+
+  /** Collect all nodes reachable from root, bucketed by index. Terminals go to vlist(n+1). */
+  def bucketByLevel(root: BDDNode, n: Int): Array[List[BDDNode]] = {
     val vlist = Array.fill(n + 2)(List.empty[BDDNode])
 
     traverse(root, new Visitor {
-      def onEnter(v: BDDNode): Unit = {
+      override def onEnter(v: BDDNode): Unit = {
         val idx = v match {
-          case Terminal(_, _, _) => n + 1
-          case NonTerminal(i, _, _, _, _) => i
+          case Terminal(_, _, _)            => n + 1
+          case NonTerminal(i, _, _, _, _)   => i
         }
         vlist(idx) = v :: vlist(idx)
       }
     })
 
-    // TODO: 你的 reduce 主逻辑还没写完，这里先不返回 subgraph(root.id)（否则会炸）
-    // 暂时先原样返回 root，保证项目可跑
-    root
+    vlist
+  }
+
+  /** Initialize ids for terminals: two unique ids for false/true. */
+  def initTerminalIds(vlist: Array[List[BDDNode]], n: Int, subgraph: scala.collection.mutable.ArrayBuffer[BDDNode]): Int = {
+    // id space for reduced graph starts from 1
+    // reserve: 1 -> False terminal, 2 -> True terminal
+    val falseT = Terminal(false, id = 1)
+    val trueT  = Terminal(true,  id = 2)
+
+    // Ensure subgraph is 1-based accessible: subgraph(id) is representative node
+    // We'll keep index 0 unused to match paper's 1..|G|
+    subgraph.clear()
+    subgraph += Terminal(false, id = 0) // dummy at index 0
+    subgraph += falseT
+    subgraph += trueT
+
+    // Assign ids to all terminal occurrences in the original graph
+    vlist(n + 1).foreach {
+      case t: Terminal =>
+        t.id = if (t.value) trueT.id else falseT.id
+      case _ => ()
+    }
+
+    2 // nextId after inserting 2 terminals
+  }
+
+  /** Build key for a node at level i after children ids are ready. */
+  private def buildKey(u: BDDNode, n: Int): Option[Key] = {
+    u match {
+      case Terminal(v, _, _) => Some(TKey(v))
+      case nt: NonTerminal =>
+        val lowId = nt.low.id
+        val highId = nt.high.id
+        // Redundant test: if low and high collapse to same reduced node, this node can be removed.
+        if (lowId == highId) None else Some(NKey(lowId, highId))
+    }
+  }
+
+  /** Process one level i (1..n) and assign reduced ids, update low/high pointers to reduced representatives. */
+  def processLevel(
+                    i: Int,
+                    vlist: Array[List[BDDNode]],
+                    subgraph: scala.collection.mutable.ArrayBuffer[BDDNode],
+                    nextId0: Int,
+                    onStep: (String, List[BDDNode]) => Unit = (_, _) => ()
+                  ): Int = {
+
+    val Q = scala.collection.mutable.ArrayBuffer.empty[(Key, NonTerminal)]
+
+    // Step 1: build keys (or mark redundant nodes)
+    val redundant = scala.collection.mutable.ListBuffer.empty[BDDNode]
+    vlist(i).foreach {
+      case nt: NonTerminal =>
+        buildKey(nt, n = 0) match {
+          case None =>
+            nt.id = nt.low.id
+            redundant += nt
+          case Some(k) =>
+            Q += ((k, nt))
+        }
+      case _ => ()
+    }
+
+    if (redundant.nonEmpty) {
+      onStep(s"Level $i: redundant (low == high)", redundant.toList)
+    }
+
+    def keyOrder(a: Key, b: Key): Boolean = (a, b) match {
+      case (TKey(x), TKey(y))             => (if (x) 1 else 0) < (if (y) 1 else 0)
+      case (TKey(_), NKey(_, _))          => true
+      case (NKey(_, _), TKey(_))          => false
+      case (NKey(al, ah), NKey(bl, bh))   => if (al != bl) al < bl else ah < bh
+    }
+
+    val sorted = Q.sortWith { case ((ka, _), (kb, _)) => keyOrder(ka, kb) }
+
+    // Step 2: show isomorphic candidates by grouping equal keys
+    val candidates = sorted.groupBy(_._1).values.filter(_.size >= 2).flatten.map(_._2).toList
+    if (candidates.nonEmpty) {
+      onStep(s"Level $i: isomorphic candidates", candidates)
+    }
+
+    // Step 3: scan sorted list, assign ids and canonicalize
+    var nextId = nextId0
+    var oldKey: Option[Key] = None
+    var repId: Int = -1
+
+    val mergedAway = scala.collection.mutable.ListBuffer.empty[BDDNode]
+
+    sorted.foreach { case (key, u) =>
+      oldKey match {
+        case Some(ok) if ok == key =>
+          // Share representative id within this key group
+          u.id = repId
+          mergedAway += u
+        case _ =>
+          nextId += 1
+          u.id = nextId
+          repId = u.id
+
+          // Relink children to reduced representatives
+          u.low = subgraph(u.low.id)
+          u.high = subgraph(u.high.id)
+
+          // Store representative
+          subgraph += u
+          oldKey = Some(key)
+      }
+    }
+
+    if (mergedAway.nonEmpty) {
+      onStep(s"Level $i: merge isomorphic", mergedAway.toList)
+    }
+
+    // Relink step is conceptually done when unique reps are stored; we still emit a frame
+    onStep(s"Level $i: relink", vlist(i).collect { case nt: NonTerminal => nt }.toList)
+
+    nextId
+  }
+
+
+  /** Full Bryant-style reduction: bottom-up labeling and structural sharing. */
+  def reduce(root: BDDNode, n: Int): BDDNode = {
+    val vlist = bucketByLevel(root, n)
+    val subgraph = scala.collection.mutable.ArrayBuffer.empty[BDDNode]
+
+    // Step A: terminals first
+    var nextId = initTerminalIds(vlist, n, subgraph)
+
+    // Step B: process from level n down to 1
+    for (i <- n to 1 by -1) {
+      nextId = processLevel(i, vlist, subgraph, nextId)
+    }
+
+    // Root's id now points to the reduced representative
+    subgraph(root.id)
+  }
+
+  final case class ReductionStep(title: String, focus: List[BDDNode])
+
+  def reduceWithTrace(
+                       root: BDDNode,
+                       n: Int,
+                       onStep: ReductionStep => Unit
+                     ): BDDNode = {
+
+    val vlist = bucketByLevel(root, n)
+    val subgraph = scala.collection.mutable.ArrayBuffer.empty[BDDNode]
+
+    onStep(ReductionStep("Start: original BDD", List(root)))
+
+    var nextId = initTerminalIds(vlist, n, subgraph)
+    onStep(ReductionStep("Init terminals", vlist(n + 1)))
+
+    for (i <- n to 1 by -1) {
+      nextId = processLevel(
+        i = i,
+        vlist = vlist,
+        subgraph = subgraph,
+        nextId0 = nextId,
+        onStep = (title, focus) => onStep(ReductionStep(title, focus))
+      )
+    }
+
+    onStep(ReductionStep("Finish: reduced BDD", List(subgraph(root.id))))
+    subgraph(root.id)
   }
 }

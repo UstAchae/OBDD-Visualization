@@ -24,6 +24,50 @@
             </div>
 
             <div class="expr-list" id="exprList"></div>
+
+            <!-- Keyboard is now left-only -->
+            <section class="keyboard kbd-panel" id="keyboard">
+                <div class="kbd-header">
+                    <button id="btnKbdToggle" class="kbd-toggle" type="button" aria-expanded="true" title="Toggle keyboard">
+                        ⌨︎
+                    </button>
+                    <div class="kbd-grip"></div>
+                </div>
+
+                <div class="kbd-body">
+                    <div class="kbd-area">
+                        <div class="kbd-row" id="rowAP">
+                            <div class="key" data-insert="p">p</div>
+                            <div class="key" data-insert="q">q</div>
+                            <div class="key" data-insert="r">r</div>
+                            <div class="key" data-insert="s">s</div>
+                            <div class="key fn" data-action="addAP">+AP</div>
+                        </div>
+
+                        <div class="kbd-row">
+                            <div class="key op" data-insert="¬">¬</div>
+                            <div class="key op" data-insert="∧">∧</div>
+                            <div class="key op" data-insert="∨">∨</div>
+                            <div class="key op" data-insert="⊕">⊕</div>
+                            <div class="key op" data-insert="→">→</div>
+                            <div class="key op" data-insert="↔">↔</div>
+                        </div>
+
+                        <div class="kbd-row">
+                            <div class="key" data-insert="(">(</div>
+                            <div class="key" data-insert=")">)</div>
+                            <div class="key" data-insert="1">1</div>
+                            <div class="key" data-insert="0">0</div>
+                            <div class="key fn" data-action="space">Space</div>
+                            <div class="key fn" data-action="backspace">⌫</div>
+                        </div>
+
+                        <div class="kbd-row">
+                            <div class="key fn" data-action="newLine">New line</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </section>
 
         <section class="right">
@@ -34,80 +78,28 @@
                     <span class="pill" id="backendInfo">Backend: /api/bdd</span>
                 </div>
             </div>
-            <div id="cy"></div>
+
+            <div class="cy-wrap">
+                <div class="layer-axis" id="layerAxis"></div>
+                <div id="cy"></div>
+            </div>
+
+            <!-- New bottom bar for Reduce -->
+            <div class="bdd-bar" id="bddBar">
+                <button class="btn primary" id="btnReduce" type="button">Reduce</button>
+                <button class="btn" id="btnReduceTerminals" type="button">Reduce: terminals</button>
+                <button class="btn" id="btnReduceRedundant" type="button">Reduce: redundant test</button>
+                <button class="btn primary" id="btnReduceMerge" type="button">Reduce: merge nodes</button>
+
+                <div class="bdd-bar-spacer"></div>
+
+                <button class="btn" id="btnFit" type="button">Fit</button>
+                <button class="btn" id="btnResetExample" type="button">Example</button>
+            </div>
         </section>
     </div>
-
-    <section class="keyboard">
-        <div class="kbd-area">
-            <div class="kbd-row" id="rowAP">
-                <div class="key" data-insert="p">p</div>
-                <div class="key" data-insert="q">q</div>
-                <div class="key" data-insert="r">r</div>
-                <div class="key" data-insert="s">s</div>
-                <div class="key fn" data-action="addAP">+AP</div>
-            </div>
-
-            <div class="kbd-row">
-                <div class="key op" data-insert="¬">¬</div>
-                <div class="key op" data-insert="∧">∧</div>
-                <div class="key op" data-insert="∨">∨</div>
-                <div class="key op" data-insert="⊕">⊕</div>
-                <div class="key op" data-insert="→">→</div>
-                <div class="key op" data-insert="↔">↔</div>
-            </div>
-
-            <div class="kbd-row">
-                <div class="key" data-insert="(">(</div>
-                <div class="key" data-insert=")">)</div>
-                <div class="key" data-insert="1">1</div>
-                <div class="key" data-insert="0">0</div>
-                <div class="key fn" data-action="space">Space</div>
-                <div class="key fn" data-action="backspace">⌫</div>
-            </div>
-
-            <!-- Keep only New line; remove Clear line -->
-            <div class="kbd-row">
-                <div class="key fn" data-action="newLine">New line</div>
-            </div>
-        </div>
-
-        <div class="controls">
-            <div class="ctrl-box">
-                <h4>Apply (预留)</h4>
-                <div class="ctrl-row">
-                    <button class="btn" id="btnApplyAnd" type="button">AND</button>
-                    <button class="btn" id="btnApplyOr" type="button">OR</button>
-                    <button class="btn" id="btnApplyXor" type="button">XOR</button>
-                </div>
-                <p class="small" style="margin:8px 0 0 0;">
-                    选中两行表达式后，用 apply 生成新表达式（你后端做 apply 最靠谱）。
-                </p>
-            </div>
-
-            <div class="ctrl-box">
-                <h4>View</h4>
-                <div class="ctrl-row">
-                    <button class="btn" id="btnFit" type="button">Fit</button>
-                    <button class="btn" id="btnResetExample" type="button">Example</button>
-                </div>
-                <p class="small" style="margin:8px 0 0 0;">
-                    右侧用 Cytoscape 画 BDD。后端返回 <code>elements</code> 就行。
-                </p>
-            </div>
-
-            <div class="ctrl-box">
-                <h4>Backend contract</h4>
-                <p class="small" style="margin:0;">
-                    POST <code>/api/bdd</code><br/>
-                    body: <code>{ expr: "p ∧ q", vars: ["p","q"] }</code><br/>
-                    resp: <code>{ elements: { nodes:[...], edges:[...] } }</code>
-                </p>
-            </div>
-        </div>
-    </section>
 </div>
 
-<script src="./app.js" defer></script>
+<script type="module" src="./js/main.js"></script>
 </body>
 </html>

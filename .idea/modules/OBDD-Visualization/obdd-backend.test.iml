@@ -20,6 +20,7 @@
     <orderEntry type="library" name="sbt: io.circe:circe-core_3:0.14.10:jar" level="project" />
     <orderEntry type="library" name="sbt: io.circe:circe-generic_3:0.14.10:jar" level="project" />
     <orderEntry type="library" name="sbt: io.circe:circe-parser_3:0.14.10:jar" level="project" />
+    <orderEntry type="library" name="sbt: ch.qos.logback:logback-classic:1.5.16:jar" level="project" />
     <orderEntry type="library" name="sbt: org.scala-lang:scala-library:2.13.14:jar" level="project" />
     <orderEntry type="library" name="sbt: org.http4s:http4s-ember-core_3:0.23.30:jar" level="project" />
     <orderEntry type="library" name="sbt: org.http4s:http4s-server_3:0.23.30:jar" level="project" />
@@ -29,9 +30,10 @@
     <orderEntry type="library" name="sbt: io.circe:circe-jawn_3:0.14.10:jar" level="project" />
     <orderEntry type="library" name="sbt: io.circe:circe-numbers_3:0.14.10:jar" level="project" />
     <orderEntry type="library" name="sbt: org.typelevel:cats-core_3:2.12.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: ch.qos.logback:logback-core:1.5.16:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.slf4j:slf4j-api:2.0.16:jar" level="project" />
     <orderEntry type="library" name="sbt: org.typelevel:log4cats-core_3:2.7.0:jar" level="project" />
     <orderEntry type="library" name="sbt: com.twitter:hpack:1.0.2:jar" level="project" />
-    <orderEntry type="library" name="sbt: org.slf4j:slf4j-api:1.7.36:jar" level="project" />
     <orderEntry type="library" name="sbt: org.typelevel:cats-effect_3:3.5.4:jar" level="project" />
     <orderEntry type="library" name="sbt: org.typelevel:case-insensitive_3:1.4.2:jar" level="project" />
     <orderEntry type="library" name="sbt: org.typelevel:cats-effect-std_3:3.5.7:jar" level="project" />
