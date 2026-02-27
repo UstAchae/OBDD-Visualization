@@ -2,6 +2,7 @@
 target/
 project/target/
 project/project/
+**/target/
 
 # Logs
 *.log
@@ -11,3 +12,8 @@ project/project/
 .idea/
 .vscode/
 *.iml
+
+# sbt / scala
+**/.bsp/
+**/.metals/
+**/.scala-build/
