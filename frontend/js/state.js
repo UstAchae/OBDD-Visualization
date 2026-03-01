@@ -8,10 +8,14 @@ export function createState() {
     ttTimer: null,
     bddTimer: null,
     lastBddPayload: null,
-    lastBddElements: null,
+
+    baseBddElements: null,   // NEW: unreduced graph from /api/bdd
+    lastBddElements: null,   // view graph (may be reduced)
+
     bddReqSeq: 0,
-    appliedReduce: [], // values: "terminals" | "redundant" | "merge"
+    appliedReduce: [],
     isReducing: false,
-    lastRequestedExpr: null,
+    lastRequestedKey: null,
+    userX: new Map(),
   };
 }

@@ -1,31 +1,31 @@
+// backend/src/main/scala/BDDFromTruthTable.scala
 object BDDFromTruthTable {
   import BDDCore._
 
   final case class Row(env: Vector[Boolean], out: Boolean)
 
   def build(vars: Vector[String], rows: Vector[Row]): BDDNode = {
-    var nextId = 0
-    def freshId(): Int = { nextId += 1; nextId }
+    val n = vars.length
+    val leafCount = 1 << n
 
-    def go(level: Int, rs: Vector[Row]): BDDNode = {
-      if (level >= vars.length) {
-        // Leaf: the assignment is fully specified. If rs is empty (incomplete table),
-        // fall back to false to keep the tree total.
-        Terminal(value = rs.headOption.map(_.out).getOrElse(false), id = freshId())
+    def go(level: Int, rs: Vector[Row], l: Int, r: Int): BDDNode = {
+      if (level >= n) {
+        val v = rs.headOption.map(_.out).getOrElse(false)
+        Terminal(value = v, uid = s"T:${if (v) 1 else 0}:$l:$r")
       } else {
-        val (hi, lo) = rs.partition(r => r.env(level))
-        val lowNode = go(level + 1, lo)
-        val highNode = go(level + 1, hi)
-
+        val (hi, lo) = rs.partition(_.env(level))
+        val mid = (l + r) / 2
+        val lowNode  = go(level + 1, lo, l, mid)
+        val highNode = go(level + 1, hi, mid, r)
         NonTerminal(
           index = level + 1,
           low = lowNode,
           high = highNode,
-          id = freshId()
+          uid = s"N:${level + 1}:$l:$r"
         )
       }
     }
 
-    go(0, rows)
+    go(level = 0, rs = rows, l = 0, r = leafCount)
   }
 }

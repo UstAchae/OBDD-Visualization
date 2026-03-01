@@ -13,24 +13,18 @@ final case class ReduceTraceReq(
                                  applied: List[String] = Nil
                                )
 
-// --- NEW: ops-based trace for UI ---
-final case class GraphOp(
-                          kind: String,
-                          ids: List[String],
-                          to: Option[String] = None
-                        )
 final case class TraceSnapStep(
                                 title: String,
                                 focus: List[String],
-                                snapshot: BDDExport.CyElements
+                                snapshot: BDDExport.CyElements,
+                                batches: Option[List[List[String]]] = None
                               )
 
+final case class ReduceTraceResp(
+                                  initial: BDDExport.CyElements,
+                                  steps: List[TraceSnapStep]
+                                )
 final case class ReduceSnapTraceResp(
                                       initial: BDDExport.CyElements,
                                       steps: List[TraceSnapStep]
                                     )
-
-final case class ReduceTerminalsTraceResp(
-                                           initial: BDDExport.CyElements,
-                                           steps: List[TraceSnapStep]
-                                         )

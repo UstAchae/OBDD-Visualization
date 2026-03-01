@@ -15,8 +15,8 @@ object BDDExport {
 
   final case class CyElements(nodes: List[CyNode], edges: List[CyEdge])
 
-  def cyIdOf(v: BDDNode): String =
-    "u" + System.identityHashCode(v).toHexString
+  def cyIdOf(v: BDDNode): String = v.uid
+    // "u" + v.id.toString
 
   def toCytoscape(root: BDDNode, vars: Vector[String]): CyElements = {
     val nodes = scala.collection.mutable.ListBuffer[CyNode]()
@@ -45,12 +45,12 @@ object BDDExport {
       }
 
       v match {
-        case NonTerminal(_, low, high, _, _) =>
+        case NonTerminal(_, low, high, _, _, _) =>
           val mid = (l + r) / 2.0
           // low always at left hand side, high on the other side
           assign(low, level0 + 1, l, mid)
           assign(high, level0 + 1, mid, r)
-        case Terminal(_, _, _) => ()
+        case Terminal(_, _, _, _) => ()
       }
     }
 
@@ -60,13 +60,13 @@ object BDDExport {
         seen += id
         val p = pos.getOrElse(id, CyPos(0.0, 0.0))
         v match {
-          case Terminal(value, _, _) =>
+          case Terminal(value, _, _, _) =>
             nodes += CyNode(
               data = CyNodeData(id, if (value) "1" else "0"),
               classes = Some("terminal"),
               position = p
             )
-          case NonTerminal(index, _, _, _, _) =>
+          case NonTerminal(index, _, _, _, _, _) =>
             val name =
               if (index >= 1 && index <= vars.length) vars(index - 1)
               else s"x$index"
@@ -97,7 +97,7 @@ object BDDExport {
       expanded += vid
 
       v match {
-        case NonTerminal(_, low, high, _, _) =>
+        case NonTerminal(_, low, high, _, _, _) =>
           val from = ensureNode(v)
           val loId = ensureNode(low)
           val hiId = ensureNode(high)
