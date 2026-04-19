@@ -17,3 +17,6 @@ project/project/
 **/.bsp/
 **/.metals/
 **/.scala-build/
+.sbt-boot/
+.sbt-global/
+apply-debug.json

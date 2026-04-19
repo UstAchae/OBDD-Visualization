@@ -1,0 +1,12 @@
+.git
+.gitignore
+.idea
+.metals
+.bsp
+.vscode
+target
+project/target
+project/project
+backend/.bsp
+**/target
+apply-debug.json

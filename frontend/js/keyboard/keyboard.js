@@ -5,15 +5,40 @@ export function setupKeyboard(ctx) {
     if (!dom.keyboardRoot) return;
     dom.keyboardRoot.classList.toggle("is-collapsed", collapsed);
     if (dom.btnKbdToggle) dom.btnKbdToggle.setAttribute("aria-expanded", String(!collapsed));
+    document.body.classList.toggle("kbd-open", !collapsed);
   }
 
+  dom.btnKbdToggle?.addEventListener(
+    "pointerdown",
+    (ev) => {
+      // Keep active expression input focused while toggling keyboard panel.
+      ev.preventDefault();
+      ev.stopPropagation();
+    },
+    true
+  );
+
   dom.btnKbdToggle?.addEventListener("click", () => {
+    const activeInput =
+      state.focusedInput && document.contains(state.focusedInput) ? state.focusedInput : null;
+    const start = activeInput?.selectionStart ?? null;
+    const end = activeInput?.selectionEnd ?? null;
     const collapsed = dom.keyboardRoot.classList.contains("is-collapsed");
     setKeyboardCollapsed(!collapsed);
+    if (activeInput) {
+      queueMicrotask(() => {
+        if (!document.contains(activeInput)) return;
+        activeInput.focus();
+        if (start != null && end != null) {
+          activeInput.setSelectionRange(start, end);
+        }
+      });
+    }
   });
 
   const keyboardEl = document.querySelector(".keyboard");
   if (!keyboardEl) return;
+  setKeyboardCollapsed(keyboardEl.classList.contains("is-collapsed"));
 
   function insertToFocused(str) {
     const input = state.focusedInput;
@@ -27,6 +52,39 @@ export function setupKeyboard(ctx) {
     const pos = start + str.length;
     input.setSelectionRange(pos, pos);
 
+    ctx.expr.sanitizeApplyOperatorInput?.(input);
+    ctx.expr.onLineChanged(ctx, state.activeIndex, input);
+    ctx.expr.maybeAdvanceApplyInput?.(input);
+  }
+
+  function insertApplyTemplate() {
+    const input = state.focusedInput;
+    if (!input || !document.contains(input)) return;
+
+    input.focus();
+    const start = input.selectionStart ?? input.value.length;
+    const end = input.selectionEnd ?? input.value.length;
+    const template = "apply(<>, , )";
+    input.value = input.value.slice(0, start) + template + input.value.slice(end);
+
+    const opStart = start + "apply(<".length;
+    input.setSelectionRange(opStart, opStart);
+    ctx.expr.onLineChanged(ctx, state.activeIndex, input);
+  }
+
+  function insertRestrictTemplate() {
+    const input = state.focusedInput;
+    if (!input || !document.contains(input)) return;
+
+    input.focus();
+    const start = input.selectionStart ?? input.value.length;
+    const end = input.selectionEnd ?? input.value.length;
+    const template = "restrict(, , )";
+    input.value = input.value.slice(0, start) + template + input.value.slice(end);
+
+    // Initial caret for restrict template should be the 3rd argument slot.
+    const bddStart = start + "restrict(, , ".length;
+    input.setSelectionRange(bddStart, bddStart);
     ctx.expr.onLineChanged(ctx, state.activeIndex, input);
   }
 
@@ -35,6 +93,25 @@ export function setupKeyboard(ctx) {
     if (!input || !document.contains(input)) return;
 
     input.focus();
+    const aliasDelete = ctx.expr.handleProtectedDerivedNameDelete?.(input, "Backspace");
+    if (aliasDelete?.handled) {
+      if (aliasDelete.changed) {
+        ctx.expr.onLineChanged(ctx, state.activeIndex, input);
+      } else {
+        ctx.expr.refreshExprUiOnly?.(ctx, state.activeIndex);
+      }
+      return;
+    }
+    const protectedResult = ctx.expr.handleProtectedApplyBackspace?.(input);
+    if (protectedResult?.handled) {
+      if (protectedResult.changed) {
+        ctx.expr.onLineChanged(ctx, state.activeIndex, input);
+      } else {
+        ctx.expr.refreshExprUiOnly?.(ctx, state.activeIndex);
+      }
+      return;
+    }
+
     const start = input.selectionStart ?? input.value.length;
     const end = input.selectionEnd ?? input.value.length;
 
@@ -49,21 +126,35 @@ export function setupKeyboard(ctx) {
     ctx.expr.onLineChanged(ctx, state.activeIndex, input);
   }
 
-  function addAP() {
-    const next = prompt("New AP name (e.g., a or x1):");
-    if (!next) return;
-    const clean = next.trim();
-    if (!clean) return;
-    if (state.apList.includes(clean)) return;
-    state.apList.push(clean);
+  function insertReferencePrefix(prefix) {
+    const input = state.focusedInput;
+    if (!input || !document.contains(input)) return;
+    const text = String(prefix || "");
+    if (!text) return;
 
-    const row = document.getElementById("rowAP");
-    if (!row) return;
-    const key = document.createElement("div");
-    key.className = "key";
-    key.dataset.insert = clean;
-    key.textContent = clean;
-    row.insertBefore(key, row.lastElementChild);
+    input.focus();
+    const current = input.value ?? "";
+    const existingRefPrefix = current.match(/^\s*([FGH])\s*=\s*/i);
+    const nextRefPrefix = text.match(/^\s*([FGH])\s*=\s*/i);
+    const existingName = existingRefPrefix?.[1]?.toUpperCase() ?? null;
+    const nextName = nextRefPrefix?.[1]?.toUpperCase() ?? null;
+
+    if (existingRefPrefix && nextName && existingName === nextName) {
+      const pos = existingRefPrefix[0].length;
+      input.setSelectionRange(pos, pos);
+      ctx.expr.onLineChanged(ctx, state.activeIndex, input);
+      return;
+    }
+
+    if (existingRefPrefix) {
+      input.value = text + current.slice(existingRefPrefix[0].length);
+    } else {
+      input.value = text + current;
+    }
+
+    const pos = text.length;
+    input.setSelectionRange(pos, pos);
+    ctx.expr.onLineChanged(ctx, state.activeIndex, input);
   }
 
   keyboardEl.addEventListener("click", (e) => {
@@ -79,11 +170,11 @@ export function setupKeyboard(ctx) {
     if (!action) return;
 
     if (action === "backspace") backspaceFocused();
-    else if (action === "space") insertToFocused(" ");
-    else if (action === "newLine") {
-      ctx.expr.addLine(ctx, "");
-      ctx.expr.focusActiveInputSoon(dom);
-    } else if (action === "addAP") addAP();
+    if (action === "insert-apply") insertApplyTemplate();
+    if (action === "insert-restrict") insertRestrictTemplate();
+    if (action === "insert-ref-f") insertReferencePrefix("F = ");
+    if (action === "insert-ref-g") insertReferencePrefix("G = ");
+    if (action === "insert-ref-h") insertReferencePrefix("H = ");
   });
 
   keyboardEl.addEventListener(

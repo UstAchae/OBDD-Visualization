@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>BDD Visualizer UI (Desmos-like)</title>
+    <title>Boola</title>
 
     <!-- Cytoscape (CDN) -->
     <script src="https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
@@ -14,71 +14,87 @@
 <body>
 <div class="app">
     <div class="main">
-        <section class="left">
+        <button
+            class="left-drawer-toggle left-drawer-toggle--restore"
+            id="leftDrawerRestore"
+            type="button"
+            aria-expanded="false"
+            aria-controls="leftPanel"
+            title="Show expression list"
+            aria-label="Show expression list"
+            hidden
+        >
+            <span class="left-drawer-toggle__icon" aria-hidden="true">«</span>
+        </button>
+        <section class="left" id="leftPanel">
             <div class="left-header">
-                <div class="title">Expressions</div>
+                <div class="title">Expression List</div>
                 <div class="left-actions">
                     <button class="btn" id="btnAdd" type="button">+ Add</button>
-                    <button class="btn danger" id="btnClearAll" type="button">Clear</button>
+                    <button
+                        class="left-drawer-toggle"
+                        id="leftDrawerToggle"
+                        type="button"
+                        aria-expanded="true"
+                        aria-controls="leftPanel"
+                        title="Hide expression list"
+                        aria-label="Hide expression list"
+                    >
+                        <span class="left-drawer-toggle__icon" aria-hidden="true">«</span>
+                    </button>
                 </div>
             </div>
 
             <div class="expr-list" id="exprList"></div>
 
-            <!-- Keyboard is now left-only -->
             <section class="keyboard kbd-panel" id="keyboard">
                 <div class="kbd-header">
                     <button id="btnKbdToggle" class="kbd-toggle" type="button" aria-expanded="true" title="Toggle keyboard">
                         ⌨︎
                     </button>
-                    <div class="kbd-grip"></div>
                 </div>
 
                 <div class="kbd-body">
-                    <div class="kbd-area">
-                        <div class="kbd-row" id="rowAP">
-                            <div class="key" data-insert="p">p</div>
-                            <div class="key" data-insert="q">q</div>
-                            <div class="key" data-insert="r">r</div>
-                            <div class="key" data-insert="s">s</div>
-                            <div class="key fn" data-action="addAP">+AP</div>
-                        </div>
+                    <div class="kbd-area kbd-grid" id="rowAP">
+                        <div class="key var" data-insert="p">p</div>
+                        <div class="key var" data-insert="q">q</div>
+                        <div class="key var" data-insert="r">r</div>
+                        <div class="key var" data-insert="s">s</div>
+                        <div class="key fn" data-action="backspace">⌫</div>
+                        <div class="key op" data-insert="∧">∧</div>
 
-                        <div class="kbd-row">
-                            <div class="key op" data-insert="¬">¬</div>
-                            <div class="key op" data-insert="∧">∧</div>
-                            <div class="key op" data-insert="∨">∨</div>
-                            <div class="key op" data-insert="⊕">⊕</div>
-                            <div class="key op" data-insert="→">→</div>
-                            <div class="key op" data-insert="↔">↔</div>
-                        </div>
+                        <div class="key var" data-insert="x1">x1</div>
+                        <div class="key var" data-insert="x2">x2</div>
+                        <div class="key var" data-insert="x3">x3</div>
+                        <div class="key var" data-insert="x4">x4</div>
+                        <div class="key var" data-insert="x5">x5</div>
+                        <div class="key op" data-insert="∨">∨</div>
 
-                        <div class="kbd-row">
-                            <div class="key" data-insert="(">(</div>
-                            <div class="key" data-insert=")">)</div>
-                            <div class="key" data-insert="1">1</div>
-                            <div class="key" data-insert="0">0</div>
-                            <div class="key fn" data-action="space">Space</div>
-                            <div class="key fn" data-action="backspace">⌫</div>
-                        </div>
+                        <div class="key ref" data-action="insert-ref-f">F =</div>
+                        <div class="key ref" data-action="insert-ref-g">G =</div>
+                        <div class="key ref" data-action="insert-ref-h">H =</div>
+                        <div class="key" data-insert="0">0</div>
+                        <div class="key" data-insert="1">1</div>
+                        <div class="key op" data-insert="¬">¬</div>
 
-                        <div class="kbd-row">
-                            <div class="key fn" data-action="newLine">New line</div>
-                        </div>
+                        <div class="key fn key-fn-template key-fn-grid" data-action="insert-apply">apply</div>
+                        <div class="key" data-insert="=">=</div>
+                        <div class="key" data-insert="(">(</div>
+                        <div class="key" data-insert=")">)</div>
+                        <div class="key op" data-insert="→">→</div>
+
+                        <div class="key fn key-fn-template key-fn-grid" data-action="insert-restrict">restriction</div>
+                        <div class="key op" data-insert="↔">↔</div>
+                        <div class="key op" data-insert="↑">↑</div>
+                        <div class="key op" data-insert="↓">↓</div>
+                        <div class="key op" data-insert="⊕">⊕</div>
                     </div>
                 </div>
             </section>
         </section>
+        <div class="resizer" id="resizer" title="Drag to resize" aria-label="Resize panels"></div>
 
         <section class="right">
-            <div class="right-header">
-                <div class="title">BDD View</div>
-                <div class="status">
-                    <span class="pill" id="selectedInfo">No selection</span>
-                    <span class="pill" id="backendInfo">Backend: /api/bdd</span>
-                </div>
-            </div>
-
             <div class="cy-wrap">
                 <div class="layer-axis" id="layerAxis"></div>
                 <div id="cy"></div>
@@ -86,18 +102,19 @@
 
             <!-- New bottom bar for Reduce -->
             <div class="bdd-bar" id="bddBar">
-                <button class="btn primary" id="btnReduce" type="button">Reduce</button>
-                <button class="btn" id="btnReduceTerminals" type="button">Reduce: terminals</button>
-                <button class="btn" id="btnReduceRedundant" type="button">Reduce: redundant test</button>
-                <button class="btn primary" id="btnReduceMerge" type="button">Reduce: merge nodes</button>
-
+                <button class="btn primary" id="btnReduce" type="button" title="Straight to OBDD">Skip Reduction</button>
+                <button class="btn expr-apply-toggle bdd-apply-toggle" id="btnApplyToggle" type="button" title="Play Apply trace" aria-label="Play Apply trace" hidden></button>
+                <span class="bdd-bar-label" id="bddBarLabel">Appliable Steps</span>
+                <button class="expr-reduce-btn" id="btnReduceTerminals" type="button" title="Reduce terminals">T</button>
+                <button class="expr-reduce-btn" id="btnReduceRedundant" type="button" title="Reduce redundant test">R</button>
+                <button class="expr-reduce-btn" id="btnReduceMerge" type="button" title="Reduce non-terminals">NT</button>
+                <button class="btn" id="btnLayout" type="button" title="Auto layout minimized BDD">Layout</button>
                 <div class="bdd-bar-spacer"></div>
 
-                <button class="btn" id="btnFit" type="button">Fit</button>
-                <button class="btn" id="btnResetExample" type="button">Example</button>
             </div>
         </section>
     </div>
+
 </div>
 
 <script type="module" src="./js/main.js"></script>
