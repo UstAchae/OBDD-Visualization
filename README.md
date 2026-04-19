@@ -1,78 +1,123 @@
-# OBDD Visualization
+# Boola
 
-这个项目可以作为一个单独的 Scala 服务部署：后端会提供 `/api` 接口，同时直接托管 `frontend/` 里的静态页面。
+Boola can be deployed as a single Scala service. The backend serves the `/api` endpoints and also hosts the static files in `frontend/`.
 
-## 本地启动
+## Local Run
 
-要求：
+Requirements:
 
 - Java 21
 - sbt
 
-启动：
+Start the app:
 
 ```bash
 sbt run
 ```
 
-默认监听 `http://localhost:8080`。
+The default address is `http://localhost:8080`.
 
-也支持通过环境变量覆盖：
+You can also override the host and port with environment variables:
 
 ```bash
 PORT=8080 HOST=0.0.0.0 sbt run
 ```
 
-## Docker 部署
+## Docker Deployment
 
-仓库已经包含 `Dockerfile`，可以直接构建：
+This repository already includes a `Dockerfile`, so you can build and run it directly:
 
 ```bash
 docker build -t obdd-visualization .
 docker run -p 8080:8080 -e PORT=8080 obdd-visualization
 ```
 
-运行后访问：
+Then open:
 
 ```text
 http://localhost:8080
 ```
 
-健康检查可用：
+Health check endpoint:
 
 ```text
 GET /api
 ```
 
-## 部署到云平台
+## Cloud Deployment
 
-因为项目已经支持读取 `PORT`，适合部署到支持 Docker 的平台，例如：
+Because the application reads `PORT`, it is suitable for Docker-based platforms such as:
 
 - Render
 - Railway
 - Fly.io
-- VPS + Docker
+- A VPS with Docker
 
-通用做法：
+## Render Deployment
 
-1. 把仓库推到 GitHub。
-2. 在平台里选择用仓库创建一个 Web Service。
-3. 选择 Docker 部署。
-4. 平台会自动构建镜像并注入运行时端口。
+This project is ready to deploy to Render as a Docker-based web service.
 
-如果平台需要健康检查路径，填写：
+The repository includes a `render.yaml` file with:
+
+- service name: `boola`
+- runtime: `docker`
+- plan: `free`
+- health check path: `/api`
+
+Manual setup in the Render dashboard:
+
+1. Push the repository to GitHub.
+2. In Render, create a new `Web Service`.
+3. Connect the repository.
+4. Render should detect the included `Dockerfile`.
+5. Confirm the service settings and deploy.
+
+After the first successful deploy, the service will be available on a Render subdomain.
+
+Important note for the free plan:
+
+- Free web services spin down after 15 minutes without inbound traffic.
+- The next request may take around one minute while the service spins back up.
+
+Typical workflow:
+
+1. Push the repository to GitHub.
+2. Create a new web service from the repository on your hosting platform.
+3. Choose Docker-based deployment.
+4. Let the platform build the image and inject the runtime port.
+
+If the platform asks for a health check path, use:
 
 ```text
 /api
 ```
 
-## 非 Docker 部署
+## Custom Domain
 
-也可以直接打包成可运行 jar：
+If you already own `boola.com`, the usual steps are:
+
+1. Deploy the application to Render, Railway, Fly.io, or your own VPS.
+2. Add `boola.com` as a custom domain in the hosting platform.
+3. Configure DNS records in your domain registrar dashboard as required by the platform.
+4. Wait for the platform to issue the HTTPS certificate.
+
+Common DNS setup:
+
+- Root domain `boola.com`: usually an `A` record or `ALIAS/ANAME`
+- Subdomain `www.boola.com`: usually a `CNAME`
+
+Recommended redirect policy:
+
+- Use `boola.com` as the primary domain
+- Redirect `www.boola.com` to `boola.com` with HTTP 301
+
+## Non-Docker Deployment
+
+You can also package the app as a runnable jar:
 
 ```bash
 sbt assembly
 java -jar target/scala-3.3.3/obdd-backend-assembly-0.1.0-SNAPSHOT.jar
 ```
 
-注意：运行目录下需要保留 `frontend/` 文件夹，因为首页和前端静态资源会从这里读取。
+Note: keep the `frontend/` directory alongside the running application, because the home page and static assets are served from that folder.
