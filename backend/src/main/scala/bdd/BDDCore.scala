@@ -52,7 +52,7 @@ object BDDCore {
   }
 
   // ---------------------------
-  // Bryant Traverse / Reduce
+  // Traverse (DFS with mark flip) and Reduce → ROBDD
   // ---------------------------
 
   trait Visitor {
@@ -78,7 +78,7 @@ object BDDCore {
     go(root)
   }
 
-  /** Key used by Figure 4 `Reduce` when sorting Q. */
+  /** Sort/dedup key for each level's node list Q during Reduce (terminal value or low/high child ids). */
   private sealed trait Key
   private final case class TKey(value: Boolean) extends Key
   private final case class NKey(lowId: Int, highId: Int) extends Key
@@ -90,13 +90,13 @@ object BDDCore {
     case (NKey(al, ah), NKey(bl, bh)) => if (al != bl) al < bl else ah < bh
   }
 
-  /** Bryant Figure 4 `Reduce`: bottom-up reduction to a ROBDD. */
+  /** Bottom-up reduction: merge redundant tests and identical subgraphs into a reduced ordered BDD. */
   def Reduce(v: BDDNode, varCount: Int): BDDNode = {
     val n = math.max(0, varCount)
     val subgraph = mutable.ArrayBuffer.empty[BDDNode]
     val vlist = Array.fill(n + 2)(List.empty[BDDNode])
 
-    // index 0 unused so that ids match the paper's 1..|G|.
+    // Reserve index 0; reduced nodes get ids used as indices into `subgraph`.
     subgraph += Terminal(false, id = 0)
 
     Traverse(v, new Visitor {
@@ -200,7 +200,7 @@ object BDDCore {
       case _                                 => None
     }
 
-  /** Bryant Figure 6 `Apply`: compute op(v1, v2) and then reduce the result. */
+  /** Binary Apply: combine two ROBDDs with `op` (Shannon expansion), then Reduce the result. */
   def Apply(v1: BDDNode, v2: BDDNode, op: Operator, varCount: Int): BDDNode = {
     val n = math.max(0, varCount)
     val left = Reduce(v1, n)
