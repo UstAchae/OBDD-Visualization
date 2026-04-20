@@ -130,8 +130,12 @@ export function createBddBarController({
 
   function getCanvasReduceKinds() {
     if (!cy.nodes().length) return [];
-    if (state.applyTraceSession) {
-      const hinted = state.applyTraceSession.availableReduceKinds;
+    const applySession =
+      state.applyTraceSession && state.applyTraceSession.idx === state.activeIndex
+        ? state.applyTraceSession
+        : null;
+    if (applySession) {
+      const hinted = applySession.availableReduceKinds;
       return Array.isArray(hinted) ? hinted : [];
     }
     if (state.restrictTraceSession && !state.restrictTraceSession.completed) return [];

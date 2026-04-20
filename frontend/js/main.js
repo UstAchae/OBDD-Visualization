@@ -1574,6 +1574,11 @@ function wireButtons() {
     }
     if (!state.lastBddPayload) return;
 
+    // Invalidate any in-flight normal BDD fetch for this row so a late
+    // response cannot overwrite the just-applied skip-reduction snapshot.
+    const activeExpr = state.expressions[state.activeIndex];
+    if (activeExpr) activeExpr.bddFetchTicket = (activeExpr.bddFetchTicket || 0) + 1;
+
     state.isReducing = true;
     const ownerIdx = state.activeIndex;
     try {
