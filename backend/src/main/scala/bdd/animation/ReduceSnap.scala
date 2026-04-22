@@ -1,4 +1,3 @@
-// backend/src/main/scala/bdd/animation/ReduceSnap.scala
 object ReduceSnap {
   import BDDCore._
   import scala.collection.mutable

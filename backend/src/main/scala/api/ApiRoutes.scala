@@ -1,4 +1,3 @@
-// backend/src/main/scala/api/ApiRoutes.scala
 
 import cats.effect.IO
 import org.http4s._

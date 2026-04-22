@@ -1,4 +1,3 @@
-// frontend/js/main.js
 
 import { ANIM, BDD_DEBOUNCE_MS } from "./config.js";
 

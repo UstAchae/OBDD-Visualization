@@ -1,4 +1,3 @@
-// frontend/js/bddTraces/restriction/play_restrict_trace.js
 import { sleep, smoothFit } from "../../graph/cy.js";
 import {
   FINAL_FIT_MS,

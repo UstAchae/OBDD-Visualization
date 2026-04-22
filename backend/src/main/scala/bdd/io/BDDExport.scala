@@ -1,4 +1,3 @@
-// backend/src/main/scala/bdd/io/BDDExport.scala
 object BDDExport {
   import BDDCore._
 

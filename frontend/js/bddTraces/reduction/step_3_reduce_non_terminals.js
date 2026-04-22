@@ -1,4 +1,3 @@
-// frontend/js/bddTraces/reduction/step_3_reduce_non_terminals.js
 import { computeSnapshotPositionMap, sleep } from "../../graph/cy.js";
 import { isApplyResultScope, nodeInScopeSnapshot, scopeEdges, scopeNodeById, scopeNodes } from "../scope.js";
 

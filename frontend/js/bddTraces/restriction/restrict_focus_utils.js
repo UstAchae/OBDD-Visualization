@@ -1,4 +1,3 @@
-// frontend/js/bddTraces/restriction/restrict_focus_utils.js
 export function addFocus(cy, focusIds = []) {
   cy.batch(() => {
     focusIds.forEach((id) => {

@@ -1,4 +1,3 @@
-// backend/src/main/scala/analysis/LineAnalyzer.scala
 import scala.util.matching.Regex
 
 object LineAnalyzer {

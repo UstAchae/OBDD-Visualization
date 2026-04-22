@@ -1,4 +1,3 @@
-// frontend/js/bddTraces/apply/apply_expansion_helpers.js
 import { sleep } from "../../graph/cy.js";
 
 const HIGHLIGHT_MS = 620;

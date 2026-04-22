@@ -1,4 +1,3 @@
-// frontend/js/bddTraces/restriction/restrict_removal_phase.js
 import { sleep } from "../../graph/cy.js";
 import { DELETE_FADE_MS, DELETE_MARK_MS } from "./restrict_constants.js";
 

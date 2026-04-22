@@ -1,4 +1,3 @@
-// frontend/js/bddTraces/restriction/restrict_redirect_phase.js
 import { sleep } from "../../graph/cy.js";
 import {
   REDIRECT_EXTEND_MS,

@@ -1,4 +1,3 @@
-// backend/src/main/scala/parser/TempParser.scala
 object TempParser {
   import BoolExpr._
 

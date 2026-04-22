@@ -1,4 +1,3 @@
-// backend/src/main/scala/bdd/io/GraphStateCodec.scala
 import scala.collection.mutable
 
 object GraphStateCodec {

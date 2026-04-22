@@ -1,4 +1,3 @@
-// backend/src/main/scala/api/ApiModels.scala
 
 final case class TruthTableReq(expr: String, vars: List[String])
 final case class TruthTableRow(env: List[Boolean], out: Boolean)

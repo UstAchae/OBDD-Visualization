@@ -1,4 +1,3 @@
-// backend/src/main/scala/bdd/animation/RestrictSnap.scala
 import scala.collection.mutable
 
 object RestrictSnap {

@@ -1,4 +1,3 @@
-// backend/src/main/scala/bool/BoolExpr.scala
 object BoolExpr {
 
   sealed trait Expr

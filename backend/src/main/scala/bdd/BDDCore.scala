@@ -1,4 +1,3 @@
-// backend/src/main/scala/bdd/BDDCore.scala
 
 import scala.collection.mutable
 

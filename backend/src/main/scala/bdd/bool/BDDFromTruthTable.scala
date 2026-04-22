@@ -1,4 +1,3 @@
-  // backend/src/main/scala/BDDFromTruthTable.scala
 object BDDFromTruthTable {
   import BDDCore._
 

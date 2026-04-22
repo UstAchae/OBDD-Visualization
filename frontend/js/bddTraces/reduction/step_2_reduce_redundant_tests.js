@@ -1,4 +1,3 @@
-// frontend/js/bddTraces/reduction/step_2_reduce_redundant_tests.js
 import { computeSnapshotPositionMap, sleep } from "../../graph/cy.js";
 import {
   isApplyResultScope,

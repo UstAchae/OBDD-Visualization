@@ -1,4 +1,3 @@
-// frontend/js/bddTraces/apply/animate_apply_expansion.js
 import { sleep } from "../../graph/cy.js";
 import {
   focusAndReveal,

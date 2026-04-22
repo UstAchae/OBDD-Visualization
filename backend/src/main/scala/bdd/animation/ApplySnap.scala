@@ -1,4 +1,3 @@
-// backend/src/main/scala/bdd/animation/ApplySnap.scala
 import scala.collection.mutable
 
 object ApplySnap {

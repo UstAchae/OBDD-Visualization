@@ -1,4 +1,3 @@
-// frontend/js/bddTraces/reduction/step_1_reduce_terminals.js
 import { computeSnapshotPositionMap, sleep, smoothFit } from "../../graph/cy.js";
 import { nodeInScopeSnapshot, scopeEdges, scopeNodes } from "../scope.js";
 
