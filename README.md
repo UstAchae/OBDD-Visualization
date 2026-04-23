@@ -1,6 +1,6 @@
 # Boola
 
-Boola is a Web-based interactive visualisation tool for learning BDD/OBDD algorithms.
+Boola is a Web-based interactive visualisation tool for learning BDD algorithms. It is available at www.boola.io
 
 ## Requirements
 
